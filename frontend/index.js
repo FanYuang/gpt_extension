@@ -7,10 +7,10 @@ import {
     Input
 } from '@airtable/blocks/ui';
 
-
+const axios = require('axios');
 
 import React , { useState } from 'react';
-const { Configuration, OpenAIApi } = require("openai");
+
 
 
 function TodoExtension() {
@@ -23,20 +23,26 @@ function TodoExtension() {
    
     async function updateresult()
     {
-        const configuration = new Configuration({
-            apiKey: apiKey,
-          });
-        const openai = new OpenAIApi(configuration);
+ 
        for (let record of records)
        {
-        const p_value = record.getCellValue(prompt);
-        const r_value = record.getCellValue(role);
-        const completion = await openai.createCompletion({
-            model: "gpt-3.5-turbo",
-            prompt:p_value
-          });
-       
-        table.updateRecordAsync(record, {'result': completion.data.choices[0].text});
+        let p_value = record.getCellValue(prompt);
+        //let r_value = record.getCellValue(role);
+        //console.log(typeof(p_value),typeof(r_value));
+        await axios.post('https://api.openai.com/v1/chat/completions',{ 
+            "model": "gpt-3.5-turbo",
+            "messages": [{"role":"You are a helpful assistant.", "content": p_value}]},
+        {
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+        },
+        
+        }).then((res) => {
+            console.log(res);
+            table.updateRecordAsync(record, {'result': res.data.choices[0].message.content});
+        }).catch(error => console.log(error));
+        
         
     }
     }

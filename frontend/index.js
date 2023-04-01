@@ -19,19 +19,20 @@ function TodoExtension() {
     const table = base.getTableByName('Tasks');
     const records = useRecords(table);
     const prompt = table.getFieldByName('prompt');
-    const role = table.getFieldByName('role');
+   
    
     async function updateresult()
     {
  
        for (let record of records)
        {
+        
         let p_value = record.getCellValue(prompt);
-        //let r_value = record.getCellValue(role);
-        //console.log(typeof(p_value),typeof(r_value));
-        await axios.post('https://api.openai.com/v1/chat/completions',{ 
+    
+        await axios.post('https://api.openai.com/v1/chat/completions',
+        { 
             "model": "gpt-3.5-turbo",
-            "messages": [{"role":"You are a helpful assistant.", "content": p_value}]},
+            "messages": [{"role":"assistant", "content": p_value}]},
         {
         headers: {
             'Content-Type': 'application/json',

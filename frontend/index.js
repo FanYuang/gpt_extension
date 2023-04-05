@@ -2,7 +2,7 @@ import {
     initializeBlock,
     useBase,
     useRecords,
-    updateRecordAsync ,
+    useLoadable, useWatchable,useCursor,useRecordById,
     Button,
     Input
 } from '@airtable/blocks/ui';
@@ -10,25 +10,41 @@ import {
 const axios = require('axios');
 
 import React , { useState } from 'react';
-
+function RecordListItem({table, recordId}) {
+    let record = useRecordById(table, recordId);
+    return record;
+}
 
 
 function TodoExtension() {
     const [apiKey, setApiKey] = useState('');
+    const cursor = useCursor();
     const base = useBase();
     const table = base.getTableByName('Tasks');
-    const records = useRecords(table);
+    const queryResult = table.selectRecords();
+    queryResult.loadDataAsync();
     const prompt = table.getFieldByName('prompt');
    
    
+     // load selected records
+    useLoadable(cursor);
+     // re-render whenever the list of selected records changes
+    //useWatchable(cursor, ['selectedRecordIds']);
+     // render the list of selected record ids
+   
+    //console.log(cursor);
+
+
     async function updateresult()
     {
- 
-       for (let record of records)
+       
+       for (let id of cursor.selectedRecordIds)
        {
-        
+     
+        let record = queryResult.getRecordById(id);
+      
         let p_value = record.getCellValue(prompt);
-    
+     
         await axios.post('https://api.openai.com/v1/chat/completions',
         { 
             "model": "gpt-3.5-turbo",
